@@ -16,6 +16,7 @@ def create_app(register_routes=True):
     db.init_app(app)
     jwt.init_app(app)
     init_mail(app)
+    
 
     # with app.app_context():
     #     from . import models
@@ -28,7 +29,7 @@ def create_app(register_routes=True):
     # # Initialize Celery
     # app = Flask(__name__)
     # app.config.from_object(Config)
-    # init_celery(app)
+      
         
     return app
 

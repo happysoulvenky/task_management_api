@@ -4,6 +4,9 @@ from app.models import Task, User, Project
 from app.extensions import db
 from datetime import datetime
 from app.utils.email_utils import send_task_created_email
+from app.utils.email_utils import _send_async_email ,send_status_update_email, send_assignment_email, send_priority_change_email
+from flask_mail import Message
+from flask import current_app
 
 
 task_bp = Blueprint("tasks", __name__, url_prefix="/tasks")
@@ -189,7 +192,7 @@ def update_task(task_id):
             try:
                 task.due_date = datetime.fromisoformat(data["due_date"])
             except ValueError:
-                return jsonify({"error": "Invalid due_date format. Use ISO format (YYYY-MM-DDTHH:MM:SS or YYYY-MM-DD)."}), 400
+                return jsonify({"error": "Invalid due_date format. Use ISO format."}), 400
     if "assigned_to_id" in data:
         new_assigned_to_id = data["assigned_to_id"]
         if new_assigned_to_id is None:
@@ -202,7 +205,33 @@ def update_task(task_id):
 
     db.session.commit()
 
+    # --- Email Notification Logic --- 
+    # # your async email sender
+    if old_status != task.status:
+        send_status_update_email(task.title, old_status, task.status, user.email)
+
+    if task.assigned_to_id is not None:
+        assigned_user = User.query.get(task.assigned_to_id)
+        if assigned_user and assigned_user.email:
+            send_assignment_email(task.title, assigned_user.email)   
+
+    if "priority" in data:
+        send_priority_change_email(task.title, task.priority, user.email)         
+
+# # Send if assigned_to_id changed
+#     if task.assigned_to_id != old_assigned_to_id and task.assigned_to_id is not None:
+#         assigned_user = User.query.get(task.assigned_to_id)
+#     if assigned_user:
+#         msg = Message(
+#             subject=f"You have been assigned to task '{task.title}'",
+#             recipients=[assigned_user.email],
+#             body=f"You have been assigned to the task '{task.title}'. Please check your task list.",
+#             sender=current_app.config['MAIL_DEFAULT_SENDER']
+#         )
+#         _send_async_email(current_app._get_current_object(), msg)
+
     return jsonify({"message": "Task updated", "id": task.id, "title": task.title}), 200
+
 
 
 @task_bp.route("/<int:task_id>", methods=["DELETE"])
