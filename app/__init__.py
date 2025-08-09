@@ -3,6 +3,9 @@ from dotenv import load_dotenv
 import os
 from app.routes import register_routes
 from app.extensions import db, jwt
+from config import Config
+from flask import Flask
+from .extensions import celery, init_celery
 
 def create_app(register_routes=True):
     load_dotenv()
@@ -20,6 +23,10 @@ def create_app(register_routes=True):
         from app.routes import register_routes
         register_routes(app)
 
+    # Initialize Celery
+    app = Flask(__name__)
+    app.config.from_object(Config)
+    init_celery(app)
         
     return app
 

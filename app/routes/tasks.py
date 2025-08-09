@@ -3,7 +3,6 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.models import Task, User, Project
 from app.extensions import db
 from datetime import datetime
-from app.tasks import send_email_notification # Import your Celery task
 
 task_bp = Blueprint("tasks", __name__, url_prefix="/tasks")
 
@@ -55,19 +54,7 @@ def create_task():
     )
     db.session.add(task)
     db.session.commit()
-
-    # 📧 Email trigger if task is assigned on creation
-    if assigned_user:
-        subject = f"New Task Assigned: {task.title}"
-        body = (f"Hello {assigned_user.email},\n\n"
-                f"You have been assigned a new task: '{task.title}' "
-                f"in project '{project.name}'.\n"
-                f"Description: {task.description or 'N/A'}\n"
-                f"Due Date: {task.due_date.strftime('%Y-%m-%d') if task.due_date else 'N/A'}\n"
-                f"Status: {task.status}")
-        send_email_notification.delay(assigned_user.email, subject, body)
-        print(f"Enqueued new assignment email for {assigned_user.email}")
-
+    
 
     return jsonify({"id": task.id, "title": task.title, "message": "Task created successfully"}), 201
 
@@ -208,47 +195,6 @@ def update_task(task_id):
             task.assigned_to_id = new_assigned_to_id
 
     db.session.commit()
-
-    # 📧 Email Notification Logic for Updates
-    # Case 1: Task assigned to a new user or unassigned
-    if old_assigned_to_id != task.assigned_to_id:
-        # If a new user is assigned
-        if task.assigned_to_id:
-            assigned_user = User.query.get(task.assigned_to_id)
-            if assigned_user: # Double check in case user was deleted
-                subject = f"Task Reassigned: {task.title}"
-                body = (f"Hello {assigned_user.email},\n\n"
-                        f"The task '{task.title}' in project '{task.project.name}' "
-                        f"has been assigned to you.\n"
-                        f"Description: {task.description or 'N/A'}\n"
-                        f"Status: {task.status}\n"
-                        f"Due Date: {task.due_date.strftime('%Y-%m-%d') if task.due_date else 'N/A'}")
-                send_email_notification.delay(assigned_user.email, subject, body)
-                print(f"Enqueued reassignment email for {assigned_user.email}")
-        # If the task was unassigned from a previous user
-        if old_assigned_to_id:
-            old_assignee = User.query.get(old_assigned_to_id)
-            if old_assignee:
-                subject = f"Task Unassigned: {task.title}"
-                body = (f"Hello {old_assignee.email},\n\n"
-                        f"The task '{task.title}' in project '{task.project.name}' "
-                        f"has been unassigned from you.")
-                send_email_notification.delay(old_assignee.email, subject, body)
-                print(f"Enqueued unassignment email for {old_assignee.email}")
-
-    # Case 2: Task status changed (send to current assignee if any)
-    if old_status != task.status and task.assigned_to_id:
-        assigned_user = User.query.get(task.assigned_to_id)
-        if assigned_user: # Double check in case user was deleted
-            subject = f"Task Status Updated: {task.title}"
-            body = (f"Hello {assigned_user.email},\n\n"
-                    f"The status of your task '{task.title}' in project '{task.project.name}' "
-                    f"has changed from '{old_status}' to '{task.status}'.\n"
-                    f"Description: {task.description or 'N/A'}\n"
-                    f"Due Date: {task.due_date.strftime('%Y-%m-%d') if task.due_date else 'N/A'}")
-            send_email_notification.delay(assigned_user.email, subject, body)
-            print(f"Enqueued status update email for {assigned_user.email}")
-
 
     return jsonify({"message": "Task updated", "id": task.id, "title": task.title}), 200
 
