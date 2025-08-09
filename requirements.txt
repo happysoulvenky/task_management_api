@@ -6,3 +6,4 @@ mysqlclient
 passlib[bcrypt]
 celery
 redis
+flask-Mail

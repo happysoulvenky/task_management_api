@@ -18,6 +18,3 @@ class Config:
     CELERY_BROKER_URL = "redis://172.28.71.222:6379/0"
     CELERY_RESULT_BACKEND = "redis://172.28.71.222:6379/0"
 
-    # Dummy DB for now
-    SQLALCHEMY_DATABASE_URI = "sqlite:///test.db"
-    SQLALCHEMY_TRACK_MODIFICATIONS = False

@@ -6,6 +6,7 @@ from app.extensions import db, jwt
 from config import Config
 from flask import Flask
 from .extensions import celery, init_celery
+from app.utils.email_utils import init_mail
 
 def create_app(register_routes=True):
     load_dotenv()
@@ -14,19 +15,20 @@ def create_app(register_routes=True):
 
     db.init_app(app)
     jwt.init_app(app)
+    init_mail(app)
 
-    with app.app_context():
-        from . import models
-        db.create_all()
+    # with app.app_context():
+    #     from . import models
+    #     db.create_all()
 
     if register_routes:
         from app.routes import register_routes
         register_routes(app)
 
-    # Initialize Celery
-    app = Flask(__name__)
-    app.config.from_object(Config)
-    init_celery(app)
+    # # Initialize Celery
+    # app = Flask(__name__)
+    # app.config.from_object(Config)
+    # init_celery(app)
         
     return app
 

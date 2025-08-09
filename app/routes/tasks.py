@@ -3,6 +3,8 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.models import Task, User, Project
 from app.extensions import db
 from datetime import datetime
+from app.utils.email_utils import send_task_created_email
+
 
 task_bp = Blueprint("tasks", __name__, url_prefix="/tasks")
 
@@ -54,6 +56,10 @@ def create_task():
     )
     db.session.add(task)
     db.session.commit()
+
+    # Send email notification
+    if assigned_user and assigned_user.email:
+        send_task_created_email(task.title, assigned_user.email)
     
 
     return jsonify({"id": task.id, "title": task.title, "message": "Task created successfully"}), 201
