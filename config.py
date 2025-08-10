@@ -14,8 +14,8 @@ class Config:
     MAIL_PASSWORD = os.getenv("MAIL_PASSWORD")
     MAIL_USE_TLS = os.getenv("MAIL_USE_TLS", "True") == "True"
 
-
-    SECRET_KEY = "dev"
-    CELERY_BROKER_URL = "redis://172.28.71.222:6379/0"
-    CELERY_RESULT_BACKEND = "redis://172.28.71.222:6379/0"
-
+    # Celery configuration
+    CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/0")
+    CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "redis://localhost:6379/0")
+    CELERY_TIMEZONE = os.getenv("CELERY_TIMEZONE", "UTC")
+    

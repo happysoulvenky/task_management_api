@@ -74,3 +74,18 @@ def send_priority_change_email(task_title, new_priority, recipient_email):
         args=(current_app._get_current_object(), msg)
     ).start()    
 
+def send_overdue_task_email(task_title, recipient_email):
+    """Send an email notifying that a task is overdue."""
+    from flask import current_app
+    msg = Message(
+        subject=f"Overdue Task: '{task_title}'",
+        recipients=[recipient_email],
+        body=f"The task '{task_title}' is overdue. Please take action.",
+        html=f"<h3>Overdue Task</h3><p>The task '{task_title}' is overdue. Please take action.</p>",
+        sender=current_app.config["MAIL_USERNAME"]
+    )
+    threading.Thread(
+        target=_send_async_email, 
+        args=(current_app._get_current_object(), msg)
+    ).start()
+    

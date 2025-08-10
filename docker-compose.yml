@@ -29,8 +29,23 @@ services:
             - "6378:6379"
         volumes:
             - redis_data:/data    
+    celery_worker:
+        build: ./
+        command: celery -A app.celery_app.celery worker --loglevel=info
+        volumes:
+            - .:/app
+        depends_on:
+            - redis
+    celery_beat:
+        build: ./
+        command: celery -A app.celery_app.celery beat --loglevel=info
+        volumes:
+            - .:/app
+        depends_on:
+            - redis
 
 
 volumes:   
   db_data:
   redis_data:
+  celery_data:

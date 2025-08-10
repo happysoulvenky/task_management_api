@@ -1,9 +1,9 @@
 Flask
+flask-Mail
 python-dotenv
 Flask-JWT-Extended
 Flask-SQLAlchemy
-mysqlclient
-passlib[bcrypt]
+PyMySQL
 celery
+passlib
 redis
-flask-Mail
