@@ -314,6 +314,9 @@ REDIS\_URL=redis://localhost:6379/0
 
 JWT\_SECRET\_KEY=supersecretkey
 
+
+**Add email sender email id and APP password to .env file**
+
 ```
 
 
