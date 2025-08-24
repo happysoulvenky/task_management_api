@@ -5,10 +5,12 @@ from operator import attrgetter
 from sqlalchemy.orm import joinedload
 
 from app.extensions import mail
+from app.extensions import celery
 from flask_mail import Message
+from flask import mail,current_app
 
 
-@celery.task
+
 def send_async_email(subject, recipients, body, html=None):
     """Celery task to send an email asynchronously."""
     from flask import current_app
@@ -20,7 +22,6 @@ def send_async_email(subject, recipients, body, html=None):
         sender=current_app.config.get("MAIL_DEFAULT_SENDER")
     )
     mail.send(msg)
-
 
 @celery.task
 def daily_overdue_summary():

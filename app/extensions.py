@@ -4,10 +4,14 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
 from flask_mail import Mail
 
-# from celery import Celery
-# from celery.schedules import crontab
-# celery = Celery(__name__)
-
+from celery import Celery
+from celery import Celery
+from celery.schedules import crontab
+celery = Celery(
+	__name__,
+	broker='redis://localhost:6379/0',
+	backend='redis://localhost:6379/0'
+)
 db = SQLAlchemy()
 jwt = JWTManager()
 mail = Mail()

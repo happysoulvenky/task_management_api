@@ -4,7 +4,7 @@ from app.models import Task, User, Project
 from app.extensions import db
 from datetime import datetime
 from app.utils.email_utils import send_task_created_email
-from app.utils.email_utils import _send_async_email ,send_status_update_email, send_assignment_email, send_priority_change_email
+from app.utils.email_utils import send_status_update_email, send_assignment_email, send_priority_change_email
 from flask_mail import Message
 from flask import current_app
 
