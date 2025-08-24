@@ -172,6 +172,7 @@ def update_task(task_id):
     # Store old values for comparison
     old_status = task.status
     old_assigned_to_id = task.assigned_to_id
+    old_priority = task.priority
 
     # Update fields
     if "title" in data:
@@ -205,30 +206,20 @@ def update_task(task_id):
 
     db.session.commit()
 
-    # --- Email Notification Logic --- 
-    # # your async email sender
+    # --- Email Notification Logic ---
+    # Send status change email to the user who owns the project
     if old_status != task.status:
         send_status_update_email(task.title, old_status, task.status, user.email)
 
-    if task.assigned_to_id is not None:
+    # Send assignment email to the new assignee, if changed
+    if task.assigned_to_id != old_assigned_to_id and task.assigned_to_id is not None:
         assigned_user = User.query.get(task.assigned_to_id)
         if assigned_user and assigned_user.email:
-            send_assignment_email(task.title, assigned_user.email)   
+            send_assignment_email(task.title, assigned_user.email)
 
-    if "priority" in data:
-        send_priority_change_email(task.title, task.priority, user.email)         
-
-# # Send if assigned_to_id changed
-#     if task.assigned_to_id != old_assigned_to_id and task.assigned_to_id is not None:
-#         assigned_user = User.query.get(task.assigned_to_id)
-#     if assigned_user:
-#         msg = Message(
-#             subject=f"You have been assigned to task '{task.title}'",
-#             recipients=[assigned_user.email],
-#             body=f"You have been assigned to the task '{task.title}'. Please check your task list.",
-#             sender=current_app.config['MAIL_DEFAULT_SENDER']
-#         )
-#         _send_async_email(current_app._get_current_object(), msg)
+    # Send priority change email to the project owner, if changed
+    if "priority" in data and task.priority != old_priority:
+        send_priority_change_email(task.title, task.priority, user.email)
 
     return jsonify({"message": "Task updated", "id": task.id, "title": task.title}), 200
 

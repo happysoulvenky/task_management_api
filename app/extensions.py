@@ -2,6 +2,7 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
+from flask_mail import Mail
 
 # from celery import Celery
 # from celery.schedules import crontab
@@ -9,6 +10,7 @@ from flask_jwt_extended import JWTManager
 
 db = SQLAlchemy()
 jwt = JWTManager()
+mail = Mail()
 
 # def init_celery(app):
 #     """Initialize Celery with Flask app configuration."""

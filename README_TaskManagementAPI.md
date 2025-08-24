@@ -337,9 +337,9 @@ flask db upgrade
 
 flask run
 
-celery -A app.celery worker --loglevel=info
+celery -A celery_worker.celery worker --loglevel=info
 
-celery -A app.celery beat --loglevel=info
+celery -A celery_worker.celery beat --loglevel=info
 
 ```
 
@@ -421,8 +421,3 @@ https://www.postman.com/maintenance-astronomer-14710862/task-management-api/coll
 
 
 ---
-
-
-
-
-
