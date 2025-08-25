@@ -1,10 +1,13 @@
 # celery/celery_config.py
 from celery.schedules import crontab
+from app.celery_app import celery
+from app.tasks.email_tasks import daily_overdue_summary
+
 
 beat_schedule = {
     "send-daily-overdue-summary": {
-        "task": "app.tasks.task_management.send_daily_overdue_summary",
-        "schedule": crontab(hour=9, minute=0),  # every day at 9 AM
+        "task": "app.tasks.email_tasks.daily_overdue_summary",
+        "schedule": crontab(minute='*/5'),  # every 5 minutes
     },
 }
 

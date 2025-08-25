@@ -1,6 +1,8 @@
 import threading
 from flask_mail import Mail, Message
 from config import Config
+from flask import current_app
+
 
 mail = Mail()  # Will be initialized in app factory
 
@@ -13,6 +15,22 @@ def _send_async_email(app, msg):
     """Send email in a background thread."""
     with app.app_context():
         mail.send(msg)
+
+# function for sending scheduled email
+def send_email(subject, recipients, body, html=None):
+    """Send a generic email via Celery/Flask-Mail."""
+    msg = Message(
+        subject=subject,
+        recipients=recipients,
+        body=body,
+        html=html,
+        sender=current_app.config["MAIL_USERNAME"]
+    )
+    # use thread for async in Flask context
+    threading.Thread(
+        target=_send_async_email,
+        args=(current_app._get_current_object(), msg)
+    ).start()
 
 def send_task_created_email(task_title, recipient_email):
     """Send an email notifying that a new task was created."""
@@ -74,18 +92,18 @@ def send_priority_change_email(task_title, new_priority, recipient_email):
         args=(current_app._get_current_object(), msg)
     ).start()    
 
-def send_overdue_task_email(task_title, recipient_email):
-    """Send an email notifying that a task is overdue."""
-    from flask import current_app
-    msg = Message(
-        subject=f"Overdue Task: '{task_title}'",
-        recipients=[recipient_email],
-        body=f"The task '{task_title}' is overdue. Please take action.",
-        html=f"<h3>Overdue Task</h3><p>The task '{task_title}' is overdue. Please take action.</p>",
-        sender=current_app.config["MAIL_USERNAME"]
-    )
-    threading.Thread(
-        target=_send_async_email, 
-        args=(current_app._get_current_object(), msg)
-    ).start()
+# def send_overdue_task_email(task_title, recipient_email):
+#     """Send an email notifying that a task is overdue."""
+#     from flask import current_app
+#     msg = Message(
+#         subject=f"Overdue Task: '{task_title}'",
+#         recipients=[recipient_email],
+#         body=f"The task '{task_title}' is overdue. Please take action.",
+#         html=f"<h3>Overdue Task</h3><p>The task '{task_title}' is overdue. Please take action.</p>",
+#         sender=current_app.config["MAIL_USERNAME"]
+#     )
+#     threading.Thread(
+#         target=_send_async_email, 
+#         args=(current_app._get_current_object(), msg)
+#     ).start()
     
